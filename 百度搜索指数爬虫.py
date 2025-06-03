@@ -159,11 +159,14 @@ def create_excel(regionCode, start_year, end_year):
 
     # 保存 Excel 文件
     filename = f'百度指数数据-{area_code[regionCode]}-{start_year}-{end_year}.xlsx'
+    if os.path.exists(filename):
+        print(f"文件 {filename} 已存在，跳过写入")
+        return None
     workbook.save(filename)
     return filename
 
 #为文件写入数据
-def write_to_excel(file_name, name, data,i):
+def write_to_excel(file_name, name, data, i):
     try:
         # 打开 Excel 文件
         workbook = openpyxl.load_workbook(file_name)
@@ -184,11 +187,14 @@ def write_to_excel(file_name, name, data,i):
 
 
 def main(keys,regionCode,startDate,endDate):
-    filename = create_excel(regionCode,startDate,endDate)
-    print(filename+"创建成功！")
+
     data = []
     i = 2
     for key in keys:
+        filename = create_excel(key, regionCode,startDate,endDate)
+        if not filename:
+            continue
+        print(filename +"--创建成功！")
         for year in range(startDate, endDate + 1):
             print(f"正在处理第{year}年，请耐心等待……")
             file_path,ptbk = get_index_data(key,regionCode, year)
@@ -199,7 +205,6 @@ def main(keys,regionCode,startDate,endDate):
             sleep(random.uniform(2.5, 3.5))  # 3秒 ± 0.5秒波动
         # print(data)
         write_to_excel(filename,name,data,i)
-        i = i +1
         data = []
     print("程序运行结束！")
 
