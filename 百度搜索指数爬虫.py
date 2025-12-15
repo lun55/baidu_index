@@ -86,7 +86,7 @@ def get_index_data(keys,regionCode, year):
     # print(res_json)
     if not res_json:
         print("抓取关键词："+keys+" 失败")
-        return None,None
+        return None,None 
     else:
         # 获取特征值
         data = res_json['data']
