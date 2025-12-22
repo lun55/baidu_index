@@ -12,18 +12,10 @@ from time import sleep
 import time
 import random
 
-area_code = { 
-    # "909": "福建",
-    "50": "福州",
-    "51": "莆田",
-    "52": "三明",
-    "53": "龙岩",
-    "54": "厦门",
-    "55": "泉州",
-    "56": "漳州",
-    "87": "宁德",
-    "253": "南平",
-    }
+#抓取地区范围
+area_code = {
+  "0": "全国",
+}
 
 # 解码函数
 def decrypt(ptbk, index_data):
@@ -59,16 +51,16 @@ def get_index_data(keys,regionCode, year):
     proxy_url = "http://api.xiequ.cn/VAD/GetIp.aspx?act=get&uid=160867&vkey=31052E916B5AD93F47A86A61A78849F6&num=1&time=30&plat=0&re=0&type=0&so=1&ow=1&spl=1&addr=&db=1"
     # 请求头配置
     headers = {
-        "Connection": "keep-alive",
-        "Accept": "application/json, text/plain, */*",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Dest": "empty",
-        "Cipher-Text": "1748491566391_1748569584082_rGNNc2tKf78QCtJvr0GDVjRQUkPrpQcDtvTr+MR+wj5ONWxlQbUr69reege9U/RamxSAVilPm1LjlrE8mDdwTCnqpc0HQmLUkXZEjUYy7/TrfaRVzmxEAoowLBWflfomMG6lpYBanu8RvA9PNpU37v2TXnEfNmu+wpIdXIyjKaRRHIWpdmV7JMq/TH1rKpjm7G0/pweze2JUnhcldlHKOESJ5lKt9lijZ9YmuuyPMsTYAS8BeOCaDy21DfgovOsDra9RmzlvgateMKC8OmzLGPKUECRgxLuAMmaz7KZLSUtCuSqoIW0XhBVEqsUq4j1+xPYmvQn0NvkYK4dLQEmZK3y1AOuOBxIJfIWAH1tDf8CXMJ6N/F8GSagV1dm+AZT9T7klMWK6mGWJ8IODIjXL9WVmrDz0JTSxsSe16K9AbmtqVTTbYvZaGr6cD+uGzUTB",
-        "Referer": "https://index.baidu.com/v2/main/index.html",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        'Cookie': Cookie}
+        'Cookie': Cookie,
+        'Cipher-Text': cipher,
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+        'Connection': 'keep-alive',
+        'Referer': 'https://index.baidu.com/v2/main/index.html',
+        'Host': 'index.baidu.com',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        }
     # 使用代理池
     # response = request_with_retry(proxy_url)
     # ip = response.get('data')[0].get('IP')
@@ -231,24 +223,42 @@ def main(keys,regionCode,startDate,endDate):
 
 
 if __name__ == '__main__':
+    jsonString = ""
+    try:
+        with open("attributes.json", mode="r", encoding='utf-8') as f:
+                jsonString = f.read()
+                print(jsonString)
+                jsonString = json.loads(jsonString)
+                f.close()
+    except:
+        print("读取attribute.json失败，请检查您的文件是否完整。")
+        exit()
 
-    area_codes = area_code.keys()
+    
+
+    # area_codes = jsonString["city"].keys()
+
     # 参数列表
-    Cookie = ''
     # 获取的时间区间，若只获取某一年份，则二者相同
     # 注意！年份区间下限为2011年，不建议选择太早年份
-    startDate = 2022
-    endDate = 2024
-    # keys = ['华为云','阿里云','腾讯云','智慧农业','智能制造','智能交通','智慧教育','智慧医疗','智能工厂','数字化转型','智慧园区','工业互联网','数据资产',''
-            # '数据资源','数据安全','数据治理']
-    keys = ['京东','淘宝','拼多多','亚马逊','朴朴','唯品会','抖音','快手','美团','饿了么']
+    Cookie = jsonString["cookie"]
+    cipher= jsonString["cipherText"]
+    startDate = jsonString["startDate"]
+    endDate = jsonString["endDate"]
+    keys = jsonString["keys"]
+    area_code=jsonString["area-code"]
+
     # 要搜索的关键词，可以输入一个列表
-    for code in area_codes:
+    for code in area_code:
         # keys = [area_code[code] + "市政府"]
         if Cookie == "":
             Cookie = input("请输入你的Cookie，若错误则无法运行：")
         elif startDate < 2011:
             print("请注意初始年份限制！！！")
+        elif len(area_code)<1:
+            print("无搜索地区")
+        elif len(keys) < 1:
+            print("无搜索关键词")
         else:
             main(keys,code,startDate, endDate)
 
